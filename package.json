@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon ./index.js",
+    "dev": "node ./index.js",
     "ui": "browser-sync start --proxy=localhost:8000 --files='**/*.css, **/*.pug, **/*.js' --ignore=node_modules --reload-delay 10 --no-ui --no-notify"
   },
   "keywords": [],
@@ -15,7 +15,13 @@
     "nodemon": "^1.19.3"
   },
   "dependencies": {
+    "connect-redis": "^4.0.4",
+    "dotenv": "^16.0.3",
     "express": "^4.17.1",
-    "pug": "^2.0.4"
+    "express-session": "^1.17.3",
+    "passport": "^0.6.0",
+    "passport-auth0": "^1.4.3",
+    "pug": "^2.0.4",
+    "redis": "^3.1.1"
   }
 }
