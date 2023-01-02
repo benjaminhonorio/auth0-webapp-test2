@@ -4,6 +4,9 @@
 
 const express = require('express');
 const path = require('path');
+const https = require('https')
+const fs = require("fs");
+const jwt = require('jsonwebtoken');
 const expressSession = require('express-session');
 const passport = require('passport');
 const Auth0Strategy = require('passport-auth0');
@@ -15,8 +18,13 @@ const authRouter = require('./auth');
 /**
  * App Variables
  */
-
+ const options = {
+  key: fs.readFileSync("./config/myapp.example-key.pem"),
+  cert: fs.readFileSync("./config/myapp.example.pem"),
+};
 const app = express();
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 const domain = process.env.DOMAIN || 'localhost';
 const port = process.env.PORT || '3000';
 
@@ -28,7 +36,9 @@ const session = {
   secret: process.env.SESSION_SECRET,
   store,
   name: '_xp_session',
-  cookie: {},
+  cookie: {
+    maxAge: 5 * 86400 * 1000
+  },
   resave: false,
   saveUninitialized: true,
 };
@@ -49,7 +59,16 @@ const strategy = new Auth0Strategy(
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
     callbackURL: process.env.AUTH0_CALLBACK_URL,
   },
-  function (accessToken, refreshToken, extraParams, profile, done) {
+  function (accessToken, refreshToken, extraParams, auth0Profile, done) {
+    const namespace = 'https://example.com/'
+    const jsonProfile = auth0Profile['_json']
+    // set this rule claims to profile
+    const profile = {
+      ...auth0Profile,
+      age: jsonProfile[namespace+'_age'],
+      phone: jsonProfile[namespace+'_phone']
+    }
+
     /**
      * Access tokens are used to authorize users to an API
      * (resource server)
@@ -110,6 +129,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/user', secured, (req, res) => {
+  console.log('Session', req.session)
   const { _raw, _json, ...userProfile } = req.user;
   res.render('user', {
     title: 'Profile',
@@ -117,10 +137,32 @@ app.get('/user', secured, (req, res) => {
   });
 });
 
+app.get('/mfa', (req, res) => {
+  const {state, session_token} = req.query
+  let decoded
+  try {
+    decoded = jwt.verify(session_token, process.env.MY_REDIRECT_SECRET)
+  } catch (error) {
+    console.log(error)
+    return res.redirect('/logout')
+  }
+  const {phone} = decoded
+  res.render('mfa', {
+    state,
+    phone
+  });
+});
+
+
+app.post('/verify', async (req, res) => {
+  const{sms_code, state} = req.body
+  res.status(302).redirect('https://dev-3u0dqtccqa2u3g3y.us.auth0.com/continue?state='+state+'&sms_code='+sms_code)
+})
+
 /**
  * Server Activation
  */
 
-app.listen(port, () => {
-  console.log(`Listening to requests on http://${domain}:${port}`);
+ https.createServer(options, app).listen(port,  () => {
+  console.log(`Listening to requests on https://${domain}:${port}`);
 });

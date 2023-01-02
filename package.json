@@ -19,6 +19,8 @@
     "dotenv": "^16.0.3",
     "express": "^4.17.1",
     "express-session": "^1.17.3",
+    "jsonwebtoken": "^9.0.0",
+    "node-fetch": "^2.6.7",
     "passport": "^0.6.0",
     "passport-auth0": "^1.4.3",
     "pug": "^2.0.4",

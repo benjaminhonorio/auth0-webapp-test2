@@ -1,0 +1,14 @@
+extends layout
+
+block layout-content
+  div.View.UserView
+    h1.Banner Howdy!
+    div.Message
+      div.Title
+        h1 You need to do mfa first!
+        h2 We sent you code to your phone #{phone}
+        h3 Enter your sms code!
+        form(action='/verify', method='POST')
+          input(type="text" name="sms_code" placeholder="")
+          input(type='hidden' name='state' value=state)
+          button verify code
