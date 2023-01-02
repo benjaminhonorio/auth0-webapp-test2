@@ -156,7 +156,8 @@ app.get('/mfa', (req, res) => {
 
 app.post('/verify', async (req, res) => {
   const{sms_code, state} = req.body
-  res.status(302).redirect('https://dev-3u0dqtccqa2u3g3y.us.auth0.com/continue?state='+state+'&sms_code='+sms_code)
+  const redirect_uri = 'https://dev-3u0dqtccqa2u3g3y.us.auth0.com/continue?state='+state+'&sms_code='+sms_code
+  res.status(302).redirect(redirect_uri)
 })
 
 /**
