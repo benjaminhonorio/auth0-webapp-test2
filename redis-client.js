@@ -1,9 +1,16 @@
 const redis = require('redis');
 const session = require('express-session');
+require('dotenv').config();
 
 let RedisStore = require('connect-redis')(session);
-let redisClient = redis.createClient();
-
+let redisClient;
+if (process.env.REDIS_URL) {
+  redisClient = redis.createClient({
+    url: process.env.REDIS_URL,
+  });
+} else {
+  redisClient = redis.createClient();
+}
 redisClient.on('error', (err) =>
   console.log(`Fail to connect with redis. ${err}`)
 );
